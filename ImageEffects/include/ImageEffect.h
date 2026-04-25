@@ -2,10 +2,10 @@
 
 #include <opencv2/opencv.hpp>
 
-class ImageEffects {
+class ImageEffect {
 public:
-    ImageEffects(cv::Mat image, float t = 0)
-    : _init_image(image), _last_t(t) {};
+    ImageEffect(cv::Mat image, float t = 0)
+        : _init_image(image), _last_t(t) {};
 
     virtual cv::Mat operator()(float t) = 0;
 
