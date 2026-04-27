@@ -115,3 +115,19 @@ cv::Mat PerlinNoise::make_octaves(int octaves, cv::Size image_size, cv::Size gri
 
     return output;
 }
+
+void PerlinNoise::draw_field(cv::Mat& field, cv::Mat &image, cv::Scalar color) {
+    if (field.size() != image.size())
+        throw std::runtime_error("field and output image must be the same size");
+    
+    field.forEach<float>([&](float& angle, const int* pos) {
+        if (pos[0] % 15 == 0 && pos[1] % 15 == 0) {
+            cv::Point2f vec(cos(angle), sin(angle));
+            float mag = 8;
+            cv::Point2f start = mag * vec;
+            cv::Point2f end = -mag * vec;
+            cv::Point px(pos[1], pos[0]);
+            cv::line(image, px + cv::Point(start), px + cv::Point(end), color);
+        }
+    });
+}

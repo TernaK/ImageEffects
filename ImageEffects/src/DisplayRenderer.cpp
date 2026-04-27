@@ -8,7 +8,8 @@ void DisplayRenderer::loop() {
         float t = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - _start_time).count() / 1e3;
 
         cv::Mat output = _ie->operator()(t);
-        cv::cvtColor(output, output, cv::COLOR_GRAY2BGR);
+        if (output.channels() == 1)
+            cv::cvtColor(output, output, cv::COLOR_GRAY2BGR);
 
         char text[256];
         std::snprintf(text, 255, "t = %.3fs", t);

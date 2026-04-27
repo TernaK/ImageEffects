@@ -18,6 +18,8 @@ public:
 
     static cv::Mat make_octaves(int octaves, cv::Size image_size, cv::Size grid_size = {1, 1}, bool smooth = true);
 
+    static void draw_field(cv::Mat& field, cv::Mat& image, cv::Scalar color = {1.0, 1.0, 1.0});
+
 private:
     std::vector<std::vector<cv::Vec2f>> _grid;
 };
