@@ -1,12 +1,11 @@
 #include "NoiseEffect.h"
+#include "PerlinNoiseEffect.h"
 #include "DisplayRenderer.h"
 #include <iostream>
 #include <chrono>
 
 int main(int argc, const char * argv[]) {
-    float amplitude = 0.3;
-    float frequency = 0.1;
-    auto noise_effect = std::make_shared<NoiseEffect>(NoiseEffect::make_image(), amplitude, frequency);
+    auto noise_effect = std::make_shared<PerlinNoiseEffect>(PerlinNoiseEffect::make_image(), 5, 5, true, true);
 
     DisplayRenderer renderer(noise_effect);
     renderer.loop();
