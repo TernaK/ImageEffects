@@ -1,6 +1,9 @@
 #include "PerlinNoise.h"
 
 PerlinNoise::PerlinNoise(cv::Size grid_size) {
+    if (grid_size.width < 1 || grid_size.height < 1)
+        throw std::runtime_error("grid_size width or height cannot be < 1");
+
     size_t gheight = grid_size.height;
     size_t gwidth = grid_size.width;
     _grid = std::vector<std::vector<cv::Vec2f>>(gheight + 1, std::vector<cv::Vec2f>(gwidth + 1));
@@ -14,6 +17,8 @@ PerlinNoise::PerlinNoise(cv::Size grid_size) {
 }
 
 cv::Mat PerlinNoise::generate(cv::Size image_size, bool smooth) {
+    if (image_size.width < width() || image_size.height < height())
+        throw std::runtime_error("image_size width or height cannot be < grid size");
     size_t iheight = image_size.height;
     size_t iwidth = image_size.width;
     size_t gheight = height();
@@ -101,6 +106,10 @@ cv::Mat PerlinNoise::make_octaves(int octaves, cv::Size image_size, cv::Size gri
         amplitude *= 0.5;
         gheight *= 2;
         gwidth *= 2;
+
+        if (image_size.width % gwidth != 0 || image_size.height % gheight != 0)
+            throw std::runtime_error("Image size must be divisible by octave grid size");
+
         output += amplitude * make(image_size, {gwidth * 2, gheight * 2}, smooth);
     }
     return output;

@@ -8,7 +8,7 @@ int main(int argc, const char * argv[]) {
 //    DisplayRenderer renderer(ne);
 //    renderer.loop();
 
-    cv::Mat image = PerlinNoise::make_octaves(1, {256, 256}, {16, 16}, false);
+    cv::Mat image = PerlinNoise::make_octaves(3, {256, 256}, {16, 16}, false);
     cv::imshow("image", image / 2.0 + 0.5);
     cv::waitKey();
 }
