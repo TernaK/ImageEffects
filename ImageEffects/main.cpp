@@ -1,12 +1,14 @@
-#include "NoiseEffect.h"
 #include "PerlinNoiseEffect.h"
 #include "DisplayRenderer.h"
 #include <iostream>
 #include <chrono>
 
 int main(int argc, const char * argv[]) {
-    auto noise_effect = std::make_shared<PerlinNoiseEffect>(PerlinNoiseEffect::make_image(), 5, 5, true, true);
+//    auto ne = std::make_shared<OctavePerlinNoiseEffect>(PerlinNoiseEffect::make_image({400,400}), 4, 0.5, cv::Size(5, 5), false, true);
+//    DisplayRenderer renderer(ne);
+//    renderer.loop();
 
-    DisplayRenderer renderer(noise_effect);
-    renderer.loop();
+    cv::Mat image = PerlinNoise::make_octaves(1, {256, 256}, {16, 16}, false);
+    cv::imshow("image", image / 2.0 + 0.5);
+    cv::waitKey();
 }
