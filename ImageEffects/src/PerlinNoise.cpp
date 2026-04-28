@@ -1,4 +1,5 @@
 #include "PerlinNoise.h"
+#include "Random.h"
 
 PerlinNoise::PerlinNoise(cv::Size grid_size) {
     if (grid_size.width < 1 || grid_size.height < 1)
@@ -9,9 +10,7 @@ PerlinNoise::PerlinNoise(cv::Size grid_size) {
     _grid = std::vector<std::vector<cv::Vec2f>>(gheight + 1, std::vector<cv::Vec2f>(gwidth + 1));
     for (size_t gy = 0; gy < gheight + 1; gy++) {
         for (size_t gx = 0; gx < gwidth + 1; gx++) {
-            float angle = (arc4random() % 360) / 360.0f * 2.0 * M_PI;
-            cv::Vec2f vec(cos(angle), sin(angle));
-            _grid[gy][gx] = vec;
+            _grid[gy][gx] = Random::vector2d();
         }
     }
 }
