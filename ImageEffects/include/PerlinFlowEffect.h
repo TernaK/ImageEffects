@@ -39,12 +39,14 @@ struct Particle {
             if (lines) {
                 for (int i = 0; i < history.size() - 1; i++) {
                     float mag = std::clamp(float(i + 1) / MAX_HISTORY * 1.0f, 0.0f, 1.0f);
-                    cv::line(image, history[i], history[i+1], mag * color);
+                    auto resultant = mag * cv::Scalar(1.0, 0, 1.0) + (1.0 - mag) * cv::Scalar(1.0, 0, 0);
+                    cv::line(image, history[i], history[i+1], mag * resultant);
                 }
             } else {
                 for (int i = 0; i < history.size(); i++) {
-                    float mag = std::clamp(pow(float(i + 1) / MAX_HISTORY * 1.0f, 2.0f), 0.0f, 1.0f);
-                    cv::drawMarker(image, cv::Point(history[i].x, history[i].y), mag * color, cv::MARKER_SQUARE, 1, 1);
+                    float mag = std::clamp(float(i + 1) / MAX_HISTORY * 1.0f, 0.0f, 1.0f);
+                    auto resultant = mag * cv::Scalar(1.0, 0, 1.0) + (1.0 - mag) * cv::Scalar(1.0, 0, 0);
+                    cv::drawMarker(image, cv::Point(history[i].x, history[i].y), mag * resultant, cv::MARKER_SQUARE, 1, 1);
                 }
             }
         } else {
@@ -133,7 +135,7 @@ public:
 
         cv::Mat output = cv::Mat::zeros(_init_image.size(), CV_32FC3);
 
-        cv::Mat field = _pn.generate(_init_image.size()) * 3.0;
+        cv::Mat field = _pn.generate(_init_image.size()) * 2.0;
 
         PerlinNoise::draw_field(field, output, {0.1, 0.1, 0.1});
 
@@ -141,7 +143,7 @@ public:
 
         for (auto& p : _particles) {
             if (p.alive()) {
-                p.draw(output, {1.0, 0, 1.0}, true, true);
+                p.draw(output, {1.0, 0, 1.0}, true, false);
             }
         }
 
