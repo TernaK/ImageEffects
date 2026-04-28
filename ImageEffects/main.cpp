@@ -5,11 +5,11 @@
 #include <chrono>
 
 int main(int argc, const char * argv[]) {
-//    auto ne = std::make_shared<OctavePerlinNoiseEffect>(PerlinNoiseEffect::make_image({400,400}), 4, 0.5, cv::Size(5, 5), false, true);
+//    auto ne = std::make_shared<OctavePerlinNoiseEffect>(cv::Size(400, 400), 4, 0.5, cv::Size(5, 5), false, true);
 //    DisplayRenderer renderer(ne);
 //    renderer.loop();
 
-    auto ne = std::make_shared<PerlinFlowEffect>(PerlinNoiseEffect::make_image({512, 512}), cv::Size(1, 2), false, false);
+    auto ne = std::make_shared<PerlinFlowEffect>(cv::Size(512, 512), cv::Size(1, 2), false, false);
     DisplayRenderer renderer(ne);
     renderer.loop();
 

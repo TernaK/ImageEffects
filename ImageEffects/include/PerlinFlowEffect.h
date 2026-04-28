@@ -4,6 +4,7 @@
 #include "PerlinNoise.h"
 #include "Random.h"
 
+/// @brief Particle with a life timer, velocity, position & position history tracking.
 struct Particle {
     static constexpr size_t MAX_HISTORY = 50;
 
@@ -14,10 +15,12 @@ struct Particle {
     cv::Point2f velocity;
     std::deque<cv::Point2f> history;
     float life;
+    bool track_history;
 
     Particle() = default;
 
-    Particle(cv::Point2f position, cv::Point2f velocity, float life) : position(position), velocity(velocity), life(life) {
+    Particle(cv::Point2f position, cv::Point2f velocity, float life, bool track_history = true)
+    : position(position), velocity(velocity), life(life), track_history(track_history) {
         init_position = position;
         init_velocity = velocity;
 
@@ -25,17 +28,26 @@ struct Particle {
         history.push_back(position);
     }
 
+    /// Check if particle's life is expended
     bool alive() { return life >= 0; }
 
+    /// Set new velocity, position, and update position tracking
     void update(const cv::Point2f& new_position, const cv::Point2f& new_velocity) {
         position = new_position;
         velocity = new_velocity;
 
-        history.push_back(new_position);
-        if (history.size() > MAX_HISTORY)
-            history.pop_front();
+        if (track_history) {
+            history.push_back(new_position);
+            if (history.size() > MAX_HISTORY)
+                history.pop_front();
+        }
     }
 
+    /// Render particle to canvas
+    /// @param image Canvas
+    /// @param color Particle color
+    /// @param draw_history If true render position history
+    /// @param lines If true render position history as connected lines, dots otherwise
     void draw(cv::Mat& image, cv::Scalar color = {1.0, 1.0, 1.0}, bool draw_history = true, bool lines = true) {
         if (draw_history) {
             if (lines) {
@@ -57,6 +69,7 @@ struct Particle {
     }
 };
 
+/// @brief Generate a vector field using Perlin noise and instantiate particles to move in the field.
 class PerlinFlowEffect : public ImageEffect {
     PerlinNoise _pn;
     std::vector<Particle> _particles;
@@ -67,11 +80,11 @@ class PerlinFlowEffect : public ImageEffect {
     float _velocity = 40;
 
 public:
-    PerlinFlowEffect(cv::Mat image, cv::Size grid_size, bool smooth = true, bool dynamic = false)
-    : ImageEffect(image), _pn(grid_size), _smooth(smooth), _dynamic(dynamic) {
-        for (int i = 0; i < image.rows; i++) {
+    PerlinFlowEffect(cv::Size size, cv::Size grid_size, bool smooth = true, bool dynamic = false)
+    : ImageEffect(size), _pn(grid_size), _smooth(smooth), _dynamic(dynamic) {
+        for (int i = 0; i < size.height; i++) {
             Particle p;
-            init_particle(p, _init_image.size(), i);
+            init_particle(p, _size, i);
 
             _particles.push_back(p);
         }
@@ -98,8 +111,8 @@ public:
 
     void update_particles(float t, const cv::Mat field) {
         float delta_t = t - _last_t;
-        int height = _init_image.rows;
-        int width = _init_image.cols;
+        int height = _size.height;
+        int width = _size.width;
         float accel_mag = 20;
 
         for (auto& p : _particles) {
@@ -121,7 +134,7 @@ public:
             }
 
             if (!p.alive())
-                init_particle(p, _init_image.size());
+                init_particle(p, _size);
         }
     }
 
@@ -129,10 +142,10 @@ public:
         if (_dynamic)
             update_grid(t);
 
-        cv::Mat output = cv::Mat::zeros(_init_image.size(), CV_32FC3);
+        cv::Mat output = cv::Mat::zeros(_size, CV_32FC3);
 
         // Get vector field
-        cv::Mat field = _pn.generate(_init_image.size()) * 1.0;
+        cv::Mat field = _pn.generate(_size) * 1.0;
         PerlinNoise::draw_field(field, output, {0.1, 0.1, 0.1});
 
         // Update particles

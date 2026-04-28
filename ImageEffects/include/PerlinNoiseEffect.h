@@ -9,8 +9,8 @@ class PerlinNoiseEffect : public ImageEffect {
     bool _dynamic;
 
 public:
-    PerlinNoiseEffect(cv::Mat image, cv::Size grid_size, bool smooth = true, bool dynamic = true)
-    : ImageEffect(image), _pn(grid_size), _smooth(smooth), _dynamic(dynamic) {}
+    PerlinNoiseEffect(cv::Size size, cv::Size grid_size, bool smooth = true, bool dynamic = true)
+    : ImageEffect(size), _pn(grid_size), _smooth(smooth), _dynamic(dynamic) {}
 
     void update_grid(float t) {
         // Update vectors
@@ -29,7 +29,7 @@ public:
         if (_dynamic)
             update_grid(t);
 
-        cv::Mat output = _pn.generate(_init_image.size(), _smooth);
+        cv::Mat output = _pn.generate(_size, _smooth);
 
         _last_t = t;
         return output;
@@ -47,18 +47,17 @@ class OctavePerlinNoiseEffect : public ImageEffect {
     float _attenuation;
 
 public:
-    OctavePerlinNoiseEffect(cv::Mat image, int octaves, float attenuation, cv::Size grid_size,
-                            bool smooth = true, bool dynamic = true)
-    : ImageEffect(image), _attenuation(attenuation) {
+    OctavePerlinNoiseEffect(cv::Size size, int octaves, float attenuation, cv::Size grid_size, bool smooth = true, bool dynamic = true)
+    : ImageEffect(size), _attenuation(attenuation) {
         for (int i = 0; i < octaves; i++) {
-            _octaves.push_back(std::make_shared<PerlinNoiseEffect>(image, grid_size, smooth, dynamic));
+            _octaves.push_back(std::make_shared<PerlinNoiseEffect>(size, grid_size, smooth, dynamic));
             grid_size.width *= 2;
             grid_size.height *= 2;
         }
     }
 
     cv::Mat operator()(float t) override {
-        cv::Mat output = _init_image.clone();
+        cv::Mat output = cv::Mat::zeros(_size, CV_32F);
 
         float amplitude = 1.0;
         for (int i = 0; i < _octaves.size(); i++) {
