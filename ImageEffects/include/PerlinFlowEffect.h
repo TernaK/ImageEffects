@@ -26,17 +26,21 @@ struct Particle {
             history.pop_front();
     }
 
-    void draw(cv::Mat& image, bool lines = true, cv::Scalar color = {1.0, 1.0, 1.0}) {
-        if (lines) {
-            for (int i = 0; i < history.size() - 1; i++) {
-                float mag = std::clamp(pow(float(i + 1) / 10.0f * 1.0f, 2.0f), 0.0f, 1.0f);
-                cv::line(image, history[i], history[i+1], mag * color);
+    void draw(cv::Mat& image, cv::Scalar color = {1.0, 1.0, 1.0}, bool draw_history = true, bool lines = true) {
+        if (draw_history) {
+            if (lines) {
+                for (int i = 0; i < history.size() - 1; i++) {
+                    float mag = std::clamp(pow(float(i + 1) / 10.0f * 1.0f, 2.0f), 0.0f, 1.0f);
+                    cv::line(image, history[i], history[i+1], mag * color);
+                }
+            } else {
+                for (int i = 0; i < history.size(); i++) {
+                    float mag = std::clamp(pow(float(i + 1) / 10.0f * 1.0f, 2.0f), 0.0f, 1.0f);
+                    cv::drawMarker(image, cv::Point(history[i].x, history[i].y), mag * color, cv::MARKER_SQUARE, 1, 1);
+                }
             }
         } else {
-            for (int i = 0; i < history.size(); i++) {
-                float mag = std::clamp(pow(float(i + 1) / 10.0f * 1.0f, 2.0f), 0.0f, 1.0f);
-                cv::drawMarker(image, cv::Point(history[i].x, history[i].y), mag * color, cv::MARKER_SQUARE, 1, 1);
-            }
+            cv::drawMarker(image, cv::Point(position.x, position.y), color, cv::MARKER_SQUARE, 2, 1);
         }
     }
 };
@@ -54,7 +58,7 @@ public:
     PerlinFlowEffect(cv::Mat image, cv::Size grid_size, bool smooth = true, bool dynamic = false)
     : ImageEffect(image), _pn(grid_size), _smooth(smooth), _dynamic(dynamic) {
         for (int i = 1; i < image.rows; i += 2) {
-            _particles.push_back(Particle(cv::Point2f(0, i), _life));
+            _particles.push_back(Particle(cv::Point2f(arc4random() % image.cols, arc4random() % image.rows), _life));
         }
     }
 
@@ -100,13 +104,13 @@ public:
 
         cv::Mat field = _pn.generate(_init_image.size());
 
-        PerlinNoise::draw_field(field, output, {0, 0, 0.7});
+        PerlinNoise::draw_field(field, output, {0.2, 0.2, 0.2});
 
         update_particles(t, field);
 
         for (auto& p : _particles) {
             if (p.alive()) {
-                p.draw(output, true, {0, 1.0, 0});
+                p.draw(output, {1.0, 0, 1.0}, true, true);
             }
         }
 
